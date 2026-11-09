@@ -5,14 +5,14 @@ import { CategoryBadge, ImpactBadge } from "./badges";
 
 export function NewsCard({ item }: { item: ProcessedNewsItem }) {
   return (
-    <article className="rounded-lg border bg-card p-4 shadow-sm transition hover:shadow-md">
+    <article className="overflow-hidden rounded-lg border bg-card p-4 shadow-sm transition hover:shadow-md">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="text-xs font-medium text-muted-foreground">{formatDateID(item.publishedAt)}</span>
         <ImpactBadge score={item.impactScore} />
       </div>
 
-      <h3 className="mt-2 text-sm font-semibold leading-snug">{item.title}</h3>
-      <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{item.summary}</p>
+      <h3 className="mt-2 break-words text-sm font-semibold leading-snug">{item.title}</h3>
+      <p className="mt-1.5 break-words text-xs leading-relaxed text-muted-foreground">{item.summary}</p>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <CategoryBadge category={item.category} />
@@ -29,14 +29,14 @@ export function NewsCard({ item }: { item: ProcessedNewsItem }) {
       </div>
 
       <div className="mt-3 space-y-2 rounded-md bg-blue-50 p-3 text-xs">
-        <p className="leading-relaxed text-slate-600">
+        <p className="break-words leading-relaxed text-slate-600">
           <span className="font-semibold text-slate-800">Analisis AI: </span>
           {item.aiReasoning}
         </p>
-        <p className="flex gap-1.5 leading-relaxed text-blue-900">
+        <p className="flex gap-1.5 break-words leading-relaxed text-blue-900">
           <Lightbulb className="mt-0.5 h-3.5 w-3.5 shrink-0" />
           <span>
-            <span className="font-semibold">Rekomendasi Collection &amp; Retention: </span>
+            <span className="font-semibold">Rekomendasi Tindakan: </span>
             {item.actionableInsight}
           </span>
         </p>
@@ -58,4 +58,3 @@ export function NewsCard({ item }: { item: ProcessedNewsItem }) {
     </article>
   );
 }
-

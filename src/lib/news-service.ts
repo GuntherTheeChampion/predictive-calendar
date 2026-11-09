@@ -25,15 +25,19 @@ const RSS_QUERIES = [
 ];
 
 function decodeHtmlEntities(input: string): string {
-  return input
+  // 1. Decode entities terlebih dahulu (karena di RSS, tag HTML disimpan sebagai &lt;a href=...&gt;)
+  const decoded = input
     .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
-    .replace(/<[^>]+>/g, " ")
     .replace(/&amp;/g, "&")
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"')
     .replace(/&#39;|&apos;/g, "'")
-    .replace(/&nbsp;/g, " ")
+    .replace(/&nbsp;/g, " ");
+  // 2. Baru hapus semua tag HTML (<a ...>, <font ...>, dll.) dan URL mentah yang panjang
+  return decoded
+    .replace(/<[^>]+>/g, " ")
+    .replace(/https?:\/\/\S+/g, "")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -69,7 +73,7 @@ function parseGoogleNewsRss(xml: string): RawNewsItem[] {
   while ((match = itemRegex.exec(xml)) !== null) {
     const block = match[1];
     const rawTitle = decodeHtmlEntities(extractTag(block, "title"));
-    const link = decodeHtmlEntities(extractTag(block, "link"));
+    const link = extractTag(block, "link").replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1").replace(/&amp;/g, "&").trim();
     const pubDateRaw = extractTag(block, "pubDate");
     const rawDesc = decodeHtmlEntities(extractTag(block, "description"));
     const sourceTag = decodeHtmlEntities(extractTag(block, "source"));

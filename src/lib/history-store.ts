@@ -75,19 +75,41 @@ const toRow = (item: ProcessedNewsItem, month: string): Row => ({
   actionable_insight: item.actionableInsight,
 });
 
-const fromRow = (r: Row): ProcessedNewsItem => ({
-  id: r.id,
-  title: r.title,
-  summary: r.summary,
-  publishedAt: r.published_at,
-  source: r.source,
-  sourceUrl: r.source_url,
-  location: r.location,
-  category: r.category,
-  impactScore: r.impact_score,
-  aiReasoning: r.ai_reasoning,
-  actionableInsight: r.actionable_insight,
-});
+function sanitizeText(s: string): string {
+  return s
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;|&apos;/g, "'")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/https?:\/\/\S+/g, "")
+    .replace(/collection\s*&\s*retention/gi, "operasional")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+const fromRow = (r: Row): ProcessedNewsItem => {
+  const cleanTitle = sanitizeText(r.title);
+  let cleanSummary = sanitizeText(r.summary);
+  if (!cleanSummary || cleanSummary.toLowerCase().startsWith(cleanTitle.toLowerCase().slice(0, 25))) {
+    cleanSummary = `${cleanTitle}. Dilaporkan oleh ${r.source}.`;
+  }
+  return {
+    id: r.id,
+    title: cleanTitle,
+    summary: cleanSummary,
+    publishedAt: r.published_at,
+    source: r.source,
+    sourceUrl: r.source_url,
+    location: r.location,
+    category: r.category,
+    impactScore: r.impact_score,
+    aiReasoning: sanitizeText(r.ai_reasoning),
+    actionableInsight: sanitizeText(r.actionable_insight),
+  };
+};
 
 async function readLocal(): Promise<Record<string, ProcessedNewsItem[]>> {
   try {
@@ -195,7 +217,13 @@ export async function getHistory(month: string): Promise<HistoryResult> {
   // Cek penyimpanan file lokal terlebih dahulu
   const localStore = await readLocal();
   if (localStore[month] && localStore[month].length > 0) {
-    const localItems = localStore[month];
+    const localItems = localStore[month].map((item) => ({
+      ...item,
+      title: sanitizeText(item.title),
+      summary: sanitizeText(item.summary) || `${sanitizeText(item.title)}. Dilaporkan oleh ${item.source}.`,
+      aiReasoning: sanitizeText(item.aiReasoning),
+      actionableInsight: sanitizeText(item.actionableInsight),
+    }));
     // Jika Supabase sudah terkonfigurasi tetapi tadi kosong, coba sinkronkan ke Supabase
     if (supabase && !sbError) {
       const syncStatus = await autoUpsertNews(month, localItems);

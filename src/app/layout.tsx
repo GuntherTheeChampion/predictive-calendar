@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Predictive News Calendar — Collection & Retention Jawa Barat",
-  description:
-    "Dashboard kalender prediktif berita relevan untuk tim Collection & Retention telekomunikasi wilayah Jawa Barat.",
+  title: "Predictive News Calendar",
+  description: "Dashboard kalender analisis dan pemantauan berita wilayah.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -14,4 +13,3 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 }
-

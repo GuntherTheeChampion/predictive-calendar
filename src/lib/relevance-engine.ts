@@ -142,7 +142,7 @@ function buildReasoning(category: RiskCategory, location: string, hits: string[]
     TELECOM_COMPETITOR: "gangguan listrik/jaringan atau aktivitas kompetitor yang memicu risiko churn",
   };
   const kw = hits.slice(0, 4).join(", ");
-  return `Terdeteksi ${label[category]} di ${location}${kw ? ` (indikator: ${kw})` : ""}. Dampak ${impact.toLowerCase()} terhadap collection & retention.`;
+  return `Terdeteksi ${label[category]} di ${location}${kw ? ` (indikator: ${kw})` : ""}. Tingkat urgensi dampak: ${impact.toLowerCase()}.`;
 }
 
 /* ------------------------------------------------------------------ */
