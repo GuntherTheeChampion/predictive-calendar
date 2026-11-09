@@ -6,7 +6,7 @@ import { getLiveNews } from "@/lib/live-feed";
 
 export const dynamic = "force-dynamic";
 
-/** GET /api/history?month=YYYY-MM — baca arsip bulan lalu dari database (bukan API berita live). */
+/** GET /api/history?month=YYYY-MM — baca arsip bulan lalu dari Supabase (atau backfill otomatis jika kosong). */
 export async function GET(request: Request) {
   const month = new URL(request.url).searchParams.get("month") ?? "";
   const target = parseMonthKey(month);
@@ -27,6 +27,7 @@ export async function GET(request: Request) {
       engine: "none",
       totalFetched: history.totalFetched,
       discarded: history.discarded,
+      dbStatus: history.dbStatus,
       warning: history.warning,
     },
   };
@@ -46,4 +47,3 @@ export async function POST() {
     );
   }
 }
-

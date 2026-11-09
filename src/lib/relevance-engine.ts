@@ -17,39 +17,50 @@ const CATEGORY_KEYWORDS: Record<RiskCategory, string[]> = {
   ECONOMIC_SHIFT: [
     "phk", "pemutusan hubungan kerja", "memutus hubungan kerja", "dirumahkan", "merumahkan",
     "pabrik tutup", "tutup pabrik", "pengangguran", "inflasi", "harga beras", "harga cabai",
-    "harga bawang", "harga elpiji", "harga gas", "bahan pokok", "kebutuhan pokok", "daya beli",
-    "umr", "ump", "umk", "upah minimum", "kenaikan harga", "efisiensi", "kredit macet",
+    "harga bawang", "harga elpiji", "harga gas", "harga pangan", "sembako", "bahan pokok",
+    "kebutuhan pokok", "daya beli", "umr", "ump", "umk", "upah minimum", "kenaikan harga",
+    "efisiensi", "kredit macet", "buruh", "pekerja", "pailit", "bangkrut", "defisit", "kemiskinan",
+    "ekonomi", "industri", "tekstil", "garmen", "manufaktur",
   ],
   NATURAL_DISASTER: [
     "banjir", "longsor", "gempa", "puting beliung", "kekeringan", "erupsi", "bencana",
     "mengungsi", "pengungsi", "dievakuasi", "evakuasi", "banjir bandang", "rob", "tanggap darurat",
+    "cuaca ekstrem", "angin kencang", "terendam", "meluap", "jembatan putus", "jalan ambles",
   ],
   REGIONAL_POLICY: [
     "pajak", "relaksasi", "keringanan", "retribusi", "subsidi", "perda", "peraturan daerah",
     "penutupan", "penertiban", "pembatasan", "bansos", "bantuan sosial", "kebijakan",
+    "pemprov", "pemkot", "pemkab", "pemutihan", "tarif", "iuran", "umkm",
   ],
   TELECOM_COMPETITOR: [
     "pemadaman listrik", "listrik padam", "pln", "blackout", "gangguan jaringan", "gangguan listrik",
     "jaringan down", "sinyal hilang", "operator seluler", "provider", "kompetitor", "migrasi",
-    "pindah provider", "internet down", "kabel fiber putus", "gangguan transmisi", "churn",
+    "pindah provider", "internet down", "kabel fiber", "gangguan transmisi", "churn", "sinyal",
+    "telekomunikasi", "indihome", "telkomsel", "xl", "indosat", "smartfren", "biznet", "wifi",
   ],
 };
 
 const HIGH_MARKERS = [
   "massal", "ribuan", "ratusan", "puluhan", "lumpuh", "terputus", "putus", "memutus", "darurat",
-  "korban jiwa", "mengungsi", "blackout", "bandang", "menghentikan operasional", "tertimbun",
-  "tutup", "dirumahkan", "melonjak",
+  "korban", "mengungsi", "blackout", "bandang", "menghentikan operasional", "tertimbun",
+  "tutup", "dirumahkan", "melonjak", "anjlok", "parah", "ekstrem", "merendam", "mogok",
 ];
 
 const ENTERTAINMENT_NOISE = [
   "artis", "selebriti", "selebgram", "gosip", "konser", "album", "pernikahan mewah",
-  "klasemen", "liga 1", "persib", "resep", "gaya rambut",
+  "klasemen", "liga 1", "persib", "timnas", "skor", "resep", "gaya rambut", "zodiac", "ramalan",
 ];
 
 /** Kabupaten/Kota & penanda wilayah Jawa Barat → nama tampilan. */
 const WEST_JAVA_REGIONS: Array<[string, string]> = [
   ["dayeuhkolot", "Kab. Bandung"],
   ["baleendah", "Kab. Bandung"],
+  ["bojongsoang", "Kab. Bandung"],
+  ["rancaekek", "Kab. Bandung"],
+  ["pangalengan", "Kab. Bandung"],
+  ["lembang", "Kab. Bandung Barat"],
+  ["padalarang", "Kab. Bandung Barat"],
+  ["bandung barat", "Kab. Bandung Barat"],
   ["kota bandung", "Kota Bandung"],
   ["kabupaten bandung", "Kab. Bandung"],
   ["bandung", "Bandung Raya"],
@@ -73,6 +84,8 @@ const WEST_JAVA_REGIONS: Array<[string, string]> = [
   ["sukabumi", "Sukabumi"],
   ["bogor", "Bogor"],
   ["depok", "Kota Depok"],
+  ["citarum", "DAS Citarum"],
+  ["pantura", "Pantura Jabar"],
   ["priangan", "Priangan"],
   ["jawa barat", "Jawa Barat"],
   ["jabar", "Jawa Barat"],
@@ -129,7 +142,7 @@ function buildReasoning(category: RiskCategory, location: string, hits: string[]
     TELECOM_COMPETITOR: "gangguan listrik/jaringan atau aktivitas kompetitor yang memicu risiko churn",
   };
   const kw = hits.slice(0, 4).join(", ");
-  return `Terdeteksi ${label[category]} di ${location} (indikator: ${kw}). Dampak ${impact.toLowerCase()} terhadap collection & retention.`;
+  return `Terdeteksi ${label[category]} di ${location}${kw ? ` (indikator: ${kw})` : ""}. Dampak ${impact.toLowerCase()} terhadap collection & retention.`;
 }
 
 /* ------------------------------------------------------------------ */
@@ -309,11 +322,10 @@ ${JSON.stringify(payload)}`;
  * (atau bila gagal) memakai mesin berbasis aturan.
  */
 export async function filterNewsForCollection(newsList: RawNewsItem[]): Promise<FilterResult> {
-  // Sumber tidak tepercaya selalu dibuang sebelum diproses mesin mana pun.
   const trusted = newsList.filter((n) => isTrustedSource(n.source));
   const untrustedCount = newsList.length - trusted.length;
 
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY?.trim();
   if (apiKey && trusted.length > 0) {
     try {
       const relevant = await filterWithGemini(trusted, apiKey);

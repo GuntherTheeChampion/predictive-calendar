@@ -1,19 +1,30 @@
-/** Portal berita yang dianggap tepercaya. Sumber di luar daftar ini dibuang oleh Relevance Engine. */
+/**
+ * Daftar portal berita nasional & lokal Jawa Barat yang tepercaya.
+ * Digunakan untuk memvalidasi sumber berita dari Google News RSS & GNews API.
+ */
 export const TRUSTED_SOURCES = [
   "kompas",
   "detik",
   "detikjabar",
   "pikiran rakyat",
+  "pikiran-rakyat",
+  "prfm",
+  "ayobandung",
+  "ayo bandung",
+  "tribun",
+  "tribunjabar",
   "tribun jabar",
   "antara",
-  "antara jabar",
+  "antaranews",
   "cnn indonesia",
+  "cnnindonesia",
+  "cnbc indonesia",
+  "cnbcindonesia",
   "bisnis.com",
   "bisnis indonesia",
   "kontan",
   "tempo",
   "republika",
-  "cnbc indonesia",
   "liputan6",
   "tirto",
   "katadata",
@@ -22,11 +33,64 @@ export const TRUSTED_SOURCES = [
   "media indonesia",
   "okezone",
   "suara.com",
+  "suara",
   "jpnn",
+  "sindonews",
+  "sindo",
+  "jawapos",
+  "jawa pos",
+  "jabar ekspres",
+  "jabarekspres",
+  "radar bandung",
+  "radar bogor",
+  "radar cirebon",
+  "radar sukabumi",
+  "radar bekasi",
+  "radar karawang",
+  "radar tasikmalaya",
+  "radar garut",
+  "inilah koran",
+  "inilah.com",
+  "galamedia",
+  "viva.co.id",
+  "viva",
+  "merdeka.com",
+  "merdeka",
+  "idn times",
+  "idntimes",
+  "beritasatu",
+  "investor.id",
+  "warta ekonomi",
+  "neraca",
+  "rmol",
+  "rmoljabar",
+  "harapan rakyat",
+  "tintahijau",
+  "bandungbergerak",
+  "infobdg",
+  "jabarprov",
+  "rri.co.id",
+  "rri",
+  "tvone",
+  "metrotv",
+  "metrotvnews",
+  "inews",
+  "idxchannel",
+];
+
+/** Daftar kata kunci sumber spam/gosip yang wajib ditolak. */
+const BLOCKED_SOURCES = [
+  "gosip",
+  "seleb",
+  "horoskop",
+  "primbon",
+  "prediksi togel",
+  "slot",
 ];
 
 export function isTrustedSource(source: string): boolean {
   const s = source.trim().toLowerCase();
+  if (!s) return false;
+  if (BLOCKED_SOURCES.some((b) => s.includes(b))) return false;
   return TRUSTED_SOURCES.some((t) => s === t || s.includes(t));
 }
-

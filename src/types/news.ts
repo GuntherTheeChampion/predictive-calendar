@@ -6,7 +6,7 @@ export type RiskCategory =
 
 export type ImpactScore = "High" | "Medium" | "Low";
 
-/** Berita mentah dari News API (GNews/NewsAPI) sebelum disaring. */
+/** Berita mentah dari Google News RSS / Portal Berita / GNews sebelum disaring. */
 export interface RawNewsItem {
   id: string;
   title: string;
@@ -37,15 +37,30 @@ export interface ProcessedNewsItem {
 
 export type DashboardMode = "live" | "archive" | "outlook";
 
+export type DataSourceType =
+  | "google-news-rss"
+  | "gnews"
+  | "supabase"
+  | "local-file"
+  | "seasonal-model"
+  | "mock";
+
 export interface NewsMeta {
   mode: DashboardMode;
   month: string;
   /** Asal data berita mentah / arsip */
-  dataSource: "gnews" | "mock" | "supabase" | "local-file" | "seasonal-model";
+  dataSource: DataSourceType;
   /** Mesin penyaring yang dipakai */
   engine: "gemini" | "rules" | "none";
   totalFetched: number;
   discarded: number;
+  /** Status penyimpanan otomatis ke database */
+  dbStatus?: {
+    connected: boolean;
+    provider: "supabase" | "local-file";
+    autoSavedCount?: number;
+    error?: string;
+  };
   warning?: string;
 }
 
@@ -60,4 +75,3 @@ export const CATEGORY_LABEL: Record<RiskCategory, string> = {
   REGIONAL_POLICY: "Kebijakan Daerah",
   TELECOM_COMPETITOR: "Kompetitor & Jaringan",
 };
-

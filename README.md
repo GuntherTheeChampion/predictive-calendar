@@ -1,29 +1,29 @@
 # Predictive News Calendar — Collection & Retention (Jawa Barat)
 
-Dashboard kalender bulanan berisi berita yang memengaruhi kemampuan bayar & risiko churn pelanggan telekomunikasi di Jawa Barat.
+Dashboard kalender bulanan berisi berita nyata dari portal berita nasional & lokal yang memengaruhi kemampuan bayar & risiko churn pelanggan telekomunikasi di Jawa Barat.
 
-## Menjalankan
+## Fitur Utama
+
+1. **Berita Nyata Otomatis (Google News RSS Indonesia)**:
+   - Menarik berita asli secara langsung dari portal berita terpercaya (*Kompas, Detik, Pikiran Rakyat, Antara, CNN Indonesia, Bisnis.com, Tribun Jabar*, dll.) tanpa perlu mendaftar API Key berita berbayar.
+2. **Auto-Upsert & Historical Backfill ke Supabase**:
+   - Setiap berita yang lolos *Relevance Engine* langsung disimpan otomatis ke tabel `past_news_history` di Supabase (serta backup di penyimpanan lokal).
+   - Saat Anda menggeser kalender ke bulan-bulan sebelumnya (*Past Months*), sistem membaca dari database; jika bulan tersebut belum memiliki arsip, sistem otomatis melakukan *backfill* berita nyata bulan tersebut dari Google News RSS.
+3. **AI Actionable Insights & Filter 4 Pilar Risiko**:
+   - Menyaring berita ke dalam 4 kategori: `Ekonomi & PHK`, `Bencana Alam`, `Kebijakan Daerah`, dan `Kompetitor & Jaringan`.
+
+## Menjalankan Aplikasi
 
 ```bash
 npm install
 npm run dev        # http://localhost:3000
 ```
 
-Tanpa konfigurasi apa pun aplikasi berjalan dengan **data simulasi** + filter berbasis aturan. Untuk data nyata, salin `.env.example` ke `.env.local` dan isi:
+## Konfigurasi Database Supabase
 
-| Variabel | Fungsi |
-| --- | --- |
-| `GNEWS_API_KEY` | Berita live bulan berjalan (GNews) |
-| `GEMINI_API_KEY` / `GEMINI_MODEL` | Relevance Engine berbasis LLM (fallback ke aturan bila gagal) |
-| `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` | Riwayat bulan lalu; jalankan `supabase/schema.sql` dulu |
-| `CRON_SECRET` | Mengamankan `/api/cron/archive` (Vercel Cron, lihat `vercel.json`) |
-
-## Alur
-
-- **Bulan berjalan** → `GET /api/news` → `news-service` → `filterNewsForCollection` (`src/lib/relevance-engine.ts`).
-- **Bulan lalu** → `GET /api/history?month=YYYY-MM` → hanya membaca database (tanpa API berita live).
-- **Bulan depan** → `GET /api/news?month=YYYY-MM` → proyeksi musiman (ditandai "Proyeksi AI", bukan berita nyata).
-- **Arsip** → `POST /api/history` (tombol "Arsipkan Bulan Ini") atau cron `/api/cron/archive` pada tgl 28–31.
-
-Penyimpanan lokal (`.data/past_news_history.json`) hanya untuk pengembangan; di hosting serverless gunakan Supabase.
-
+1. Pastikan file `.env.local` berisi URL dan Publishable/Anon Key Supabase Anda:
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=https://vjhdqnhpstgdsjgoqtks.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_...
+   ```
+2. Buka **Supabase Dashboard** → **SQL Editor** → **New Query**, lalu jalankan isi file [`supabase/schema.sql`](./supabase/schema.sql) (termasuk *policy* RLS agar aplikasi dapat membaca dan menyimpan berita otomatis).
